@@ -1,2 +1,2 @@
 # SimpleDNS.NET
-SimpleDNS API Wrapper Library
+Simple .NET SimpleDNS REST Client
