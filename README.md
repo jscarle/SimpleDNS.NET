@@ -1,2 +1,2 @@
 # SimpleDNS.NET
-SimpleDNS API Wrapper .NET Library
+SimpleDNS API Wrapper Library
