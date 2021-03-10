@@ -41,4 +41,14 @@
     <PackageReference Include="RestSharp" Version="106.11.7" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageId>SimpleDNS.NET</PackageId>
+    <Product>SimpleDNS.NET</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE" Pack="true" PackagePath="" />
+  </ItemGroup>
+  
 </Project>
