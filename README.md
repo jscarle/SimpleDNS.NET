@@ -1,2 +1,2 @@
-# SimpleDNS.NET
-SimpleDNS REST Client
+# SimpleDNS.NET - SimpleDNS REST Client
+
