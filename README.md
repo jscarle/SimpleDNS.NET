@@ -14,7 +14,9 @@ The client has been tested up to [version 8 build 108](https://simpledns.plus/ne
 string adminUrl = "https://localhost/v2";
 string adminUsername = "admin";
 string adminPassword = "password";
-SimpleDnsManager simpleDns = new SimpleDnsManager(adminUrl, AuthenticationMode.Digest, adminUsername, adminPassword, true);
+SimpleDnsManager simpleDns = new SimpleDnsManager(
+    adminUrl, AuthenticationMode.Digest,
+    adminUsername, adminPassword, true);
 ```
 
 ### Create an A record
@@ -23,7 +25,11 @@ string zoneDomain = "domain.text";
 string recordFqdn = "www.domain.text";
 string recordIpAddress = "198.51.100.3";
 simpleDns.PatchZoneRecords(zoneDomain, new List<ZoneRecord> {
-    new ZoneRecord { Name = recordFqdn, Type = RecordType.A, Data = recordIpAddress, Ttl = 14400 }
+    new ZoneRecord {
+        Name = recordFqdn,
+        Type = RecordType.A,
+        Data = recordIpAddress,
+        Ttl = 14400 }
 });
 ```
 
@@ -35,7 +41,9 @@ List<ZoneRecord> zoneRecords = simpleDns.GetZoneRecords(zoneDomain);
 ZoneRecord zoneRecord = zoneRecords.Find(z => z.Name == recordFqdn);
 if (zoneRecord != null)
     simpleDns.PatchZoneRecords(zoneDomain, new List<ZoneRecord> {
-        new ZoneRecord { Name = recordFqdn, Remove = true }
+        new ZoneRecord {
+            Name = recordFqdn,
+            Remove = true }
     });
 ```
 
