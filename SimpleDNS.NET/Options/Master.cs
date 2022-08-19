@@ -1,33 +1,35 @@
 ﻿using System.Net;
 using Newtonsoft.Json;
 
-namespace SimpleDNS.Options
+namespace SimpleDNS.Options;
+
+public class Master : ICommittable
 {
-    public class Master : ICommittable
+    public Master()
     {
-        public Master()
-        {
-            TSigKey_value = new Key();
-        }
-
-        [JsonIgnore]
-        public bool Changed { get { return (IP_changed | TSigKey_changed | TSigKey_value.Changed); } }
-        public void Commit()
-        {
-            IP_changed = false;
-            TSigKey_changed = false;
-
-            TSigKey_value.Commit();
-        }
-
-        [JsonProperty("IP")]
-        public IPAddress IP { get { return IP_value; } set { IP_changed = true; IP_value = value; } }
-        private IPAddress IP_value;
-        private bool IP_changed;
-
-        [JsonProperty("TSigKey")]
-        public Key TSigKey { get { return TSigKey_value; } set { TSigKey_changed = true; TSigKey_value = value; } }
-        private Key TSigKey_value;
-        private bool TSigKey_changed;
+        _sigKeyValue = new Key();
     }
+
+    [JsonIgnore]
+    public bool Changed => _ipChanged | _sigKeyChanged | _sigKeyValue.Changed;
+
+    public void Commit()
+    {
+        _ipChanged = false;
+        _sigKeyChanged = false;
+
+        _sigKeyValue.Commit();
+    }
+
+    [JsonProperty("IP")]
+    public IPAddress Ip { get => _ipValue;
+        set { _ipChanged = true; _ipValue = value; } }
+    private IPAddress _ipValue;
+    private bool _ipChanged;
+
+    [JsonProperty("TSigKey")]
+    public Key SigKey { get => _sigKeyValue;
+        set { _sigKeyChanged = true; _sigKeyValue = value; } }
+    private Key _sigKeyValue;
+    private bool _sigKeyChanged;
 }

@@ -19,21 +19,21 @@ namespace SimpleDNS.Common
     [Serializable]
     public class IPAddressRange : ISerializable, IEnumerable<IPAddress>, IReadOnlyDictionary<string, string>, IEquatable<IPAddressRange>
 #else
-    public class IPAddressRange : IEnumerable<IPAddress>, IReadOnlyDictionary<string, string>, IEquatable<IPAddressRange>
+    public class IpAddressRange : IEnumerable<IPAddress>, IReadOnlyDictionary<string, string>, IEquatable<IpAddressRange>
 #endif
     {
         // Pattern 1. CIDR range: "192.168.0.0/24", "fe80::%lo0/10"
-        private static readonly Regex CIDRPattern = new Regex(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*/[ \t]*(?<maskLen>\d+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex CidrPattern = new(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*/[ \t]*(?<maskLen>\d+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         // Pattern 2. Uni address: "127.0.0.1", "::1%eth0"
-        private static readonly Regex UnicastPattern = new Regex(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex UnicastPattern = new(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         // Pattern 3. First last range: "169.254.0.0-169.254.0.255", "fe80::1%23-fe80::ff%23"
         //            also shortcut notation: "192.168.1.1-7" (IPv4 only)
-        private static readonly Regex RangePattern = new Regex(@"^(?<first>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*[\-–][ \t]*(?<last>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex RangePattern = new(@"^(?<first>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*[\-–][ \t]*(?<last>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         // Pattern 4. Bit mask range: "192.168.0.0/255.255.255.0"
-        private static readonly Regex SubnetMaskPattern = new Regex(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*/[ \t]*(?<bitmask>[\da-f\.:]+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex SubnetMaskPattern = new(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*/[ \t]*(?<bitmask>[\da-f\.:]+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private IPAddress _first;
         public IPAddress First
@@ -50,18 +50,18 @@ namespace SimpleDNS.Common
         }
 
         private IRangeOperator _operator;
-        private IRangeOperator Operator => _operator ?? (_operator = RangeOperatorFactory.Create(this));
+        private IRangeOperator Operator => _operator ??= RangeOperatorFactory.Create(this);
 
         /// <summary>
         /// Creates an empty range object, equivalent to "0.0.0.0/0".
         /// </summary>
-        public IPAddressRange() : this(new IPAddress(0L)) { }
+        public IpAddressRange() : this(new IPAddress(0L)) { }
 
         /// <summary>
         /// Creates a new range with the same start/last address (range of one)
         /// </summary>
         /// <param name="singleAddress"></param>
-        public IPAddressRange(IPAddress singleAddress)
+        public IpAddressRange(IPAddress singleAddress)
         {
             if (singleAddress == null)
                 throw new ArgumentNullException(nameof(singleAddress));
@@ -74,7 +74,7 @@ namespace SimpleDNS.Common
         /// Throws an exception if First comes after Last, or the
         /// addresses are not in the same family.
         /// </summary>
-        public IPAddressRange(IPAddress first, IPAddress last)
+        public IpAddressRange(IPAddress first, IPAddress last)
         {
             if (first == null)
                 throw new ArgumentNullException(nameof(first));
@@ -82,8 +82,8 @@ namespace SimpleDNS.Common
             if (last == null)
                 throw new ArgumentNullException(nameof(last));
 
-            byte[] firstBytes = first.GetAddressBytes();
-            byte[] lastBytes = last.GetAddressBytes();
+            var firstBytes = first.GetAddressBytes();
+            var lastBytes = last.GetAddressBytes();
             First = new IPAddress(firstBytes);
             Last = new IPAddress(lastBytes);
 
@@ -99,14 +99,14 @@ namespace SimpleDNS.Common
         /// </summary>
         /// <param name="baseAddress"></param>
         /// <param name="maskLength"></param>
-        public IPAddressRange(IPAddress baseAddress, int maskLength)
+        public IpAddressRange(IPAddress baseAddress, int maskLength)
         {
             if (baseAddress == null)
                 throw new ArgumentNullException(nameof(baseAddress));
 
-            byte[] baseAdrBytes = baseAddress.GetAddressBytes();
+            var baseAdrBytes = baseAddress.GetAddressBytes();
             if (baseAdrBytes.Length * 8 < maskLength) throw new FormatException();
-            byte[] maskBytes = Bits.GetBitMask(baseAdrBytes.Length, maskLength);
+            var maskBytes = Bits.GetBitMask(baseAdrBytes.Length, maskLength);
             baseAdrBytes = Bits.And(baseAdrBytes, maskBytes);
 
             First = new IPAddress(baseAdrBytes);
@@ -140,19 +140,19 @@ namespace SimpleDNS.Common
         {
             if (ipAddress == null) throw new ArgumentNullException(nameof(ipAddress));
 
-            IRangeOperator rangeOperator = Operator;
+            var rangeOperator = Operator;
             return ipAddress.AddressFamily == First.AddressFamily && rangeOperator.Contains(ipAddress);
         }
 
-        public bool Contains(IPAddressRange range)
+        public bool Contains(IpAddressRange range)
         {
             if (range == null) throw new ArgumentNullException(nameof(range));
 
-            IRangeOperator rangeOperator = Operator;
+            var rangeOperator = Operator;
             return First.AddressFamily == range.First.AddressFamily && rangeOperator.Contains(range);
         }
 
-        public static IPAddressRange Parse(string ipRangeString)
+        public static IpAddressRange Parse(string ipRangeString)
         {
             if (ipRangeString == null) throw new ArgumentNullException(nameof(ipRangeString));
 
@@ -160,52 +160,52 @@ namespace SimpleDNS.Common
             ipRangeString = ipRangeString.Trim();
 
             // Pattern 1. CIDR range: "192.168.0.0/24", "fe80::/10%eth0"
-            Match m1 = CIDRPattern.Match(ipRangeString);
+            var m1 = CidrPattern.Match(ipRangeString);
             if (m1.Success)
             {
-                byte[] baseAdrBytes = IPAddress.Parse(StripScopeId(m1.Groups["adr"].Value)).GetAddressBytes();
-                int maskLen = int.Parse(m1.Groups["maskLen"].Value);
+                var baseAdrBytes = IPAddress.Parse(StripScopeId(m1.Groups["adr"].Value)).GetAddressBytes();
+                var maskLen = int.Parse(m1.Groups["maskLen"].Value);
                 if (baseAdrBytes.Length * 8 < maskLen) throw new FormatException();
-                byte[] maskBytes = Bits.GetBitMask(baseAdrBytes.Length, maskLen);
+                var maskBytes = Bits.GetBitMask(baseAdrBytes.Length, maskLen);
                 baseAdrBytes = Bits.And(baseAdrBytes, maskBytes);
-                return new IPAddressRange(new IPAddress(baseAdrBytes), new IPAddress(Bits.Or(baseAdrBytes, Bits.Not(maskBytes))));
+                return new IpAddressRange(new IPAddress(baseAdrBytes), new IPAddress(Bits.Or(baseAdrBytes, Bits.Not(maskBytes))));
             }
 
             // Pattern 2. Uni address: "127.0.0.1", ":;1"
-            Match m2 = UnicastPattern.Match(ipRangeString);
+            var m2 = UnicastPattern.Match(ipRangeString);
             if (m2.Success)
             {
-                return new IPAddressRange(IPAddress.Parse(StripScopeId(ipRangeString)));
+                return new IpAddressRange(IPAddress.Parse(StripScopeId(ipRangeString)));
             }
 
             // Pattern 3. First last range: "169.254.0.0-169.254.0.255"
-            Match m3 = RangePattern.Match(ipRangeString);
+            var m3 = RangePattern.Match(ipRangeString);
             if (m3.Success)
             {
                 // if the left part contains dot, but the right one does not, we treat it as a shortuct notation
                 // and simply copy the part before last dot from the left part as the prefix to the right one
-                string first = m3.Groups["first"].Value;
-                string last = m3.Groups["last"].Value;
+                var first = m3.Groups["first"].Value;
+                var last = m3.Groups["last"].Value;
                 if (!first.Contains('.') || last.Contains('.'))
-                    return new IPAddressRange(first: IPAddress.Parse(StripScopeId(first)), last: IPAddress.Parse(StripScopeId(last)));
+                    return new IpAddressRange(first: IPAddress.Parse(StripScopeId(first)), last: IPAddress.Parse(StripScopeId(last)));
                 if (last.Contains('%'))
                     throw new FormatException("The last of IPv4 range shortcut notation contains scope id.");
 
-                int lastDotAt = first.LastIndexOf('.');
-                last = first.Substring(0, lastDotAt + 1) + last;
+                var lastDotAt = first.LastIndexOf('.');
+                last = first[..(lastDotAt + 1)] + last;
 
-                return new IPAddressRange(first: IPAddress.Parse(StripScopeId(first)), last: IPAddress.Parse(StripScopeId(last)));
+                return new IpAddressRange(first: IPAddress.Parse(StripScopeId(first)), last: IPAddress.Parse(StripScopeId(last)));
             }
 
             // Pattern 4. Bit mask range: "192.168.0.0/255.255.255.0"
-            Match m4 = SubnetMaskPattern.Match(ipRangeString);
+            var m4 = SubnetMaskPattern.Match(ipRangeString);
             if (m4.Success)
             {
-                byte[] baseAdrBytes = IPAddress.Parse(StripScopeId(m4.Groups["adr"].Value)).GetAddressBytes();
-                byte[] maskBytes = IPAddress.Parse(m4.Groups["bitmask"].Value).GetAddressBytes();
+                var baseAdrBytes = IPAddress.Parse(StripScopeId(m4.Groups["adr"].Value)).GetAddressBytes();
+                var maskBytes = IPAddress.Parse(m4.Groups["bitmask"].Value).GetAddressBytes();
                 ValidateSubnetMaskIsLinear(maskBytes);
                 baseAdrBytes = Bits.And(baseAdrBytes, maskBytes);
-                return new IPAddressRange(new IPAddress(baseAdrBytes), new IPAddress(Bits.Or(baseAdrBytes, Bits.Not(maskBytes))));
+                return new IpAddressRange(new IPAddress(baseAdrBytes), new IPAddress(Bits.Or(baseAdrBytes, Bits.Not(maskBytes))));
             }
 
             throw new FormatException("Unknown IP range string.");
@@ -213,15 +213,15 @@ namespace SimpleDNS.Common
 
         private static string StripScopeId(string ipAddressString) => ipAddressString.Split('%')[0];
 
-        private static void ValidateSubnetMaskIsLinear(byte[] maskBytes)
+        private static void ValidateSubnetMaskIsLinear(IReadOnlyList<byte> maskBytes)
         {
-            int f = maskBytes[0] & 0x80; // 0x00: The bit should be 0, 0x80: The bit should be 1
-            for (int i = 0; i < maskBytes.Length; i++)
+            var f = maskBytes[0] & 0x80; // 0x00: The bit should be 0, 0x80: The bit should be 1
+            for (var i = 0; i < maskBytes.Count; i++)
             {
-                byte maskByte = maskBytes[i];
-                for (int b = 0; b < 8; b++)
+                var maskByte = maskBytes[i];
+                for (var b = 0; b < 8; b++)
                 {
-                    int bit = maskByte & 0x80;
+                    var bit = maskByte & 0x80;
                     switch (f)
                     {
                         case 0x00:
@@ -237,7 +237,7 @@ namespace SimpleDNS.Common
             }
         }
 
-        public static bool TryParse(string ipRangeString, out IPAddressRange ipRange)
+        public static bool TryParse(string ipRangeString, out IpAddressRange ipRange)
         {
             try
             {
@@ -270,12 +270,10 @@ namespace SimpleDNS.Common
         {
             if (Equals(First, Last))
                 return First.ToString();
-            if (Prefix > 0)
-                return $"{First}/{Prefix}";
-            return $"{First}-{Last}";
+            return Prefix > 0 ? $"{First}/{Prefix}" : $"{First}-{Last}";
         }
 
-        public bool Equals(IPAddressRange other)
+        public bool Equals(IpAddressRange other)
         {
             return other != null && First.Equals(other.First) && Last.Equals(other.Last);
         }
@@ -283,35 +281,30 @@ namespace SimpleDNS.Common
         public override bool Equals(object obj)
         {
             if (obj is null) return false;
-            if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-
-            return Equals((IPAddressRange)obj);
+            return ReferenceEquals(this, obj) || Equals((IpAddressRange)obj);
         }
 
         public override int GetHashCode()
         {
-            int hashCode = 1903003160;
-            hashCode = hashCode * -1521134295 + EqualityComparer<IPAddress>.Default.GetHashCode(First);
-            hashCode = hashCode * -1521134295 + EqualityComparer<IPAddress>.Default.GetHashCode(Last);
-            return hashCode;
+            return HashCode.Combine(First, Last);
         }
 
         public int Prefix
         {
             get
             {
-                byte[] byteFirst = First.GetAddressBytes();
+                var byteFirst = First.GetAddressBytes();
 
                 // Handle single IP
                 if (First.Equals(Last))
                     return byteFirst.Length * 8;
 
-                int length = byteFirst.Length * 8;
+                var length = byteFirst.Length * 8;
 
-                for (int i = 0; i < length; i++)
+                for (var i = 0; i < length; i++)
                 {
-                    byte[] mask = Bits.GetBitMask(byteFirst.Length, i);
+                    var mask = Bits.GetBitMask(byteFirst.Length, i);
                     if (new IPAddress(Bits.And(byteFirst, mask)).Equals(First) && new IPAddress(Bits.Or(byteFirst, Bits.Not(mask))).Equals(Last))
                         return i;
                 }
@@ -322,7 +315,7 @@ namespace SimpleDNS.Common
 
         public bool IsPrivate()
         {
-            List<IPAddressRange> privateRanges = new List<IPAddressRange>();
+            var privateRanges = new List<IpAddressRange>();
             switch (First.AddressFamily)
             {
                 case AddressFamily.InterNetwork:
@@ -335,16 +328,12 @@ namespace SimpleDNS.Common
                     break;
             }
 
-            foreach (IPAddressRange privateRange in privateRanges)
-                if (privateRange.Contains(First) || privateRange.Contains(Last))
-                    return true;
-
-            return false;
+            return privateRanges.Any(privateRange => privateRange.Contains(First) || privateRange.Contains(Last));
         }
 
         public bool IsReserved()
         {
-            List<IPAddressRange> reservedRanges = new List<IPAddressRange>();
+            var reservedRanges = new List<IpAddressRange>();
             switch (First.AddressFamily)
             {
                 case AddressFamily.InterNetwork:
@@ -383,21 +372,17 @@ namespace SimpleDNS.Common
                     break;
             }
 
-            foreach (IPAddressRange reservedRange in reservedRanges)
-                if (reservedRange.Contains(First) || reservedRange.Contains(Last))
-                    return true;
-
-            return false;
+            return reservedRanges.Any(reservedRange => reservedRange.Contains(First) || reservedRange.Contains(Last));
         }
 
         #region JSON.NET Support by implement IReadOnlyDictionary<string, string>
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public IPAddressRange(IEnumerable<KeyValuePair<string, string>> items)
+        public IpAddressRange(IEnumerable<KeyValuePair<string, string>> items)
         {
-            List<KeyValuePair<string, string>> keyValuePairs = items.ToList();
-            First = IPAddress.Parse(TryGetValue(keyValuePairs, nameof(First), out string value1) ? value1 : throw new KeyNotFoundException());
-            Last = IPAddress.Parse(TryGetValue(keyValuePairs, nameof(Last), out string value2) ? value2 : throw new KeyNotFoundException());
+            var keyValuePairs = items.ToList();
+            First = IPAddress.Parse(TryGetValue(keyValuePairs, nameof(First), out var value1) ? value1 : throw new KeyNotFoundException());
+            Last = IPAddress.Parse(TryGetValue(keyValuePairs, nameof(Last), out var value2) ? value2 : throw new KeyNotFoundException());
         }
 
         /// <summary>
@@ -417,8 +402,8 @@ namespace SimpleDNS.Common
 
         private bool TryGetValue(IEnumerable<KeyValuePair<string, string>> items, string key, out string value)
         {
-            items = items ?? GetDictionaryItems();
-            KeyValuePair<string, string> foundItem = items.FirstOrDefault(item => item.Key == key);
+            items ??= GetDictionaryItems();
+            var foundItem = items.FirstOrDefault(item => item.Key == key);
             value = foundItem.Value;
             return foundItem.Key != null;
         }
@@ -429,7 +414,7 @@ namespace SimpleDNS.Common
 
         int IReadOnlyCollection<KeyValuePair<string, string>>.Count => GetDictionaryItems().Count();
 
-        string IReadOnlyDictionary<string, string>.this[string key] => TryGetValue(key, out string value) ? value : throw new KeyNotFoundException();
+        string IReadOnlyDictionary<string, string>.this[string key] => TryGetValue(key, out var value) ? value : throw new KeyNotFoundException();
 
         bool IReadOnlyDictionary<string, string>.ContainsKey(string key) => GetDictionaryItems().Any(item => item.Key == key);
 
@@ -445,51 +430,51 @@ namespace SimpleDNS.Common
         {
             internal static byte[] Not(byte[] bytes)
             {
-                byte[] result = (byte[])bytes.Clone();
-                for (int i = 0; i < result.Length; i++)
+                var result = (byte[])bytes.Clone();
+                for (var i = 0; i < result.Length; i++)
                 {
                     result[i] = (byte)~result[i];
                 }
                 return result;
             }
 
-            internal static byte[] And(byte[] A, byte[] B)
+            internal static byte[] And(byte[] a, byte[] b)
             {
-                byte[] result = (byte[])A.Clone();
-                for (int i = 0; i < A.Length; i++)
+                var result = (byte[])a.Clone();
+                for (var i = 0; i < a.Length; i++)
                 {
-                    result[i] &= B[i];
+                    result[i] &= b[i];
                 }
                 return result;
             }
 
-            internal static byte[] Or(byte[] A, byte[] B)
+            internal static byte[] Or(byte[] a, byte[] b)
             {
-                byte[] result = (byte[])A.Clone();
-                for (int i = 0; i < A.Length; i++)
+                var result = (byte[])a.Clone();
+                for (var i = 0; i < a.Length; i++)
                 {
-                    result[i] |= B[i];
+                    result[i] |= b[i];
                 }
                 return result;
             }
 
-            internal static bool GtECore(byte[] A, byte[] B, int offset = 0)
+            internal static bool GtECore(byte[] a, byte[] b, int offset = 0)
             {
-                int length = A.Length;
-                if (length > B.Length) length = B.Length;
-                for (int i = offset; i < length; i++)
+                var length = a.Length;
+                if (length > b.Length) length = b.Length;
+                for (var i = offset; i < length; i++)
                 {
-                    if (A[i] != B[i]) return A[i] >= B[i];
+                    if (a[i] != b[i]) return a[i] >= b[i];
                 }
                 return true;
             }
 
             internal static byte[] GetBitMask(int sizeOfBuff, int bitLen)
             {
-                byte[] maskBytes = new byte[sizeOfBuff];
-                int bytesLen = bitLen / 8;
-                int bitsLen = bitLen % 8;
-                for (int i = 0; i < bytesLen; i++)
+                var maskBytes = new byte[sizeOfBuff];
+                var bytesLen = bitLen / 8;
+                var bitsLen = bitLen % 8;
+                for (var i = 0; i < bytesLen; i++)
                 {
                     maskBytes[i] = 0xff;
                 }
@@ -498,40 +483,40 @@ namespace SimpleDNS.Common
             }
         }
 
-        private class IPv4RangeOperator : IRangeOperator
+        private class Pv4RangeOperator : IRangeOperator
         {
-            private UInt32 First { get; }
+            private uint First { get; }
 
-            private UInt32 Last { get; }
+            private uint Last { get; }
 
-            internal IPv4RangeOperator(IPAddressRange range)
+            internal Pv4RangeOperator(IpAddressRange range)
             {
-                First = IPAddressToUInt32(range.First);
-                Last = IPAddressToUInt32(range.Last);
+                First = IpAddressToUInt32(range.First);
+                Last = IpAddressToUInt32(range.Last);
             }
 
             private bool Contains(IPAddress ipaddress)
             {
-                uint address = IPAddressToUInt32(ipaddress);
+                var address = IpAddressToUInt32(ipaddress);
                 return First <= address && address <= Last;
             }
 
-            public bool Contains(IPAddressRange range)
+            public bool Contains(IpAddressRange range)
             {
-                uint rangeFirst = IPAddressToUInt32(range.First);
-                uint rangeLast = IPAddressToUInt32(range.Last);
+                var rangeFirst = IpAddressToUInt32(range.First);
+                var rangeLast = IpAddressToUInt32(range.Last);
                 return First <= rangeFirst && rangeLast <= Last;
             }
 
             public IEnumerator<IPAddress> GetEnumerator()
             {
-                for (UInt32 adr = First; adr <= Last; adr++)
+                for (var adr = First; adr <= Last; adr++)
                 {
                     yield return UInt32ToIPv4Address(adr);
                 }
             }
 
-            int ICollection<IPAddress>.Count => (int)((Last - First) + 1);
+            int ICollection<IPAddress>.Count => (int)(Last - First + 1);
 
             bool ICollection<IPAddress>.IsReadOnly => true;
 
@@ -546,9 +531,9 @@ namespace SimpleDNS.Common
 
             void ICollection<IPAddress>.CopyTo(IPAddress[] array, int arrayIndex)
             {
-                if ((array.Length - arrayIndex) < (this as ICollection<IPAddress>).Count) throw new ArgumentException();
+                if (array.Length - arrayIndex < (this as ICollection<IPAddress>).Count) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
 
-                foreach (IPAddress ipAddress in this)
+                foreach (var ipAddress in this)
                 {
                     array[arrayIndex++] = ipAddress;
                 }
@@ -559,40 +544,40 @@ namespace SimpleDNS.Common
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
-        private class IPv6RangeOperator : IRangeOperator
+        private class Pv6RangeOperator : IRangeOperator
         {
             private BigInteger First { get; }
 
             private BigInteger Last { get; }
 
-            internal IPv6RangeOperator(IPAddressRange range)
+            internal Pv6RangeOperator(IpAddressRange range)
             {
-                First = IPAddressToBigInteger(range.First);
-                Last = IPAddressToBigInteger(range.Last);
+                First = IpAddressToBigInteger(range.First);
+                Last = IpAddressToBigInteger(range.Last);
             }
 
             private bool Contains(IPAddress ipAddress)
             {
-                BigInteger address = IPAddressToBigInteger(ipAddress);
+                var address = IpAddressToBigInteger(ipAddress);
                 return First <= address && address <= Last;
             }
 
-            public bool Contains(IPAddressRange range)
+            public bool Contains(IpAddressRange range)
             {
-                BigInteger rangeFirst = IPAddressToBigInteger(range.First);
-                BigInteger rangeLast = IPAddressToBigInteger(range.Last);
+                var rangeFirst = IpAddressToBigInteger(range.First);
+                var rangeLast = IpAddressToBigInteger(range.Last);
                 return First <= rangeFirst && rangeLast <= Last;
             }
 
             public IEnumerator<IPAddress> GetEnumerator()
             {
-                for (BigInteger adr = First; adr <= Last; adr++)
+                for (var adr = First; adr <= Last; adr++)
                 {
                     yield return BigIntegerToIPv6Address(ref adr);
                 }
             }
 
-            int ICollection<IPAddress>.Count => (int)((Last - First) + 1);
+            int ICollection<IPAddress>.Count => (int)(Last - First + 1);
 
             bool ICollection<IPAddress>.IsReadOnly => true;
 
@@ -607,9 +592,9 @@ namespace SimpleDNS.Common
 
             void ICollection<IPAddress>.CopyTo(IPAddress[] array, int arrayIndex)
             {
-                if ((array.Length - arrayIndex) < (this as ICollection<IPAddress>).Count) throw new ArgumentException();
+                if (array.Length - arrayIndex < (this as ICollection<IPAddress>).Count) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
 
-                foreach (IPAddress ipAddress in this)
+                foreach (var ipAddress in this)
                 {
                     array[arrayIndex++] = ipAddress;
                 }
@@ -622,22 +607,22 @@ namespace SimpleDNS.Common
 
         private interface IRangeOperator : ICollection<IPAddress>
         {
-            bool Contains(IPAddressRange range);
+            bool Contains(IpAddressRange range);
         }
 
         private static class RangeOperatorFactory
         {
-            internal static IRangeOperator Create(IPAddressRange range)
+            internal static IRangeOperator Create(IpAddressRange range)
             {
                 if (range.First.AddressFamily != range.Last.AddressFamily) throw new InvalidOperationException("Both First and Last properties must be of the same address family");
 
-                byte[] firstBytes = range.First.GetAddressBytes();
-                byte[] lastBytes = range.Last.GetAddressBytes();
+                var firstBytes = range.First.GetAddressBytes();
+                var lastBytes = range.Last.GetAddressBytes();
                 if (!Bits.GtECore(lastBytes, firstBytes)) throw new InvalidOperationException("First must be smaller than the Last");
 
                 return range.First.AddressFamily == AddressFamily.InterNetwork ?
-                    new IPv4RangeOperator(range) :
-                    new IPv6RangeOperator(range) as IRangeOperator;
+                    new Pv4RangeOperator(range) :
+                    new Pv6RangeOperator(range);
             }
         }
 
@@ -645,31 +630,31 @@ namespace SimpleDNS.Common
 
         #region Conversion Helpers
 
-        private static UInt32 IPAddressToUInt32(IPAddress ipAddress)
+        private static uint IpAddressToUInt32(IPAddress ipAddress)
         {
-            byte[] addressBytes = ipAddress.GetAddressBytes();
+            var addressBytes = ipAddress.GetAddressBytes();
             Array.Reverse(addressBytes);
             return BitConverter.ToUInt32(addressBytes, 0);
         }
 
-        private static BigInteger IPAddressToBigInteger(IPAddress ipAddress)
+        private static BigInteger IpAddressToBigInteger(IPAddress ipAddress)
         {
-            byte[] addressBytes = ipAddress.GetAddressBytes();
+            var addressBytes = ipAddress.GetAddressBytes();
             Array.Reverse(addressBytes);
             Array.Resize(ref addressBytes, addressBytes.Length + 1);
             return new BigInteger(addressBytes);
         }
 
-        private static IPAddress UInt32ToIPv4Address(UInt32 value)
+        private static IPAddress UInt32ToIPv4Address(uint value)
         {
-            byte[] addressBytes = BitConverter.GetBytes(value);
+            var addressBytes = BitConverter.GetBytes(value);
             Array.Reverse(addressBytes);
             return new IPAddress(addressBytes);
         }
 
         private static IPAddress BigIntegerToIPv6Address(ref BigInteger value)
         {
-            byte[] addressBytes = value.ToByteArray();
+            var addressBytes = value.ToByteArray();
             Array.Resize(ref addressBytes, 16);
             Array.Reverse(addressBytes);
             return new IPAddress(addressBytes);
@@ -678,10 +663,10 @@ namespace SimpleDNS.Common
         #endregion
     }
 
-    public static class IPAddressRangeExtensions
+    public static class IpAddressRangeExtensions
     {
-        public static bool IsPrivate(this IPAddress ipAddress) => new IPAddressRange(ipAddress).IsPrivate();
+        public static bool IsPrivate(this IPAddress ipAddress) => new IpAddressRange(ipAddress).IsPrivate();
 
-        public static bool IsReserved(this IPAddress ipAddress) => new IPAddressRange(ipAddress).IsReserved();
+        public static bool IsReserved(this IPAddress ipAddress) => new IpAddressRange(ipAddress).IsReserved();
     }
 }

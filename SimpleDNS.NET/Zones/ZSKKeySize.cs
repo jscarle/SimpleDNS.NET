@@ -1,11 +1,10 @@
-﻿namespace SimpleDNS.Zones
+﻿namespace SimpleDNS.Zones;
+
+public enum ZskKeySize : ushort
 {
-    public enum ZSKKeySize : ushort
-    {
-        Size512 = 512,
-        Size1024 = 1024,
-        Size2048 = 2048,
-        Size3072 = 3072,
-        Size4096 = 4096
-    }
+    Size512 = 512,
+    Size1024 = 1024,
+    Size2048 = 2048,
+    Size3072 = 3072,
+    Size4096 = 4096
 }

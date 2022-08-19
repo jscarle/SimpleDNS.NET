@@ -1,9 +1,8 @@
-﻿namespace SimpleDNS.Options
-{
-    public interface ICommittable
-    {
-        bool Changed { get; }
+﻿namespace SimpleDNS.Options;
 
-        void Commit();
-    }
+public interface ICommittable
+{
+    bool Changed { get; }
+
+    void Commit();
 }

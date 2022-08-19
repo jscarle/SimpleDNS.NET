@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace SimpleDNS.Plugins
-{
-    public class PluginsInfo
-    {
-        [JsonProperty("First")]
-        public bool First { get; set; }
+namespace SimpleDNS.Plugins;
 
-        [JsonProperty("Instances")]
-        public List<Plugin> Instances { get; set; }
-    }
+public class PluginsInfo
+{
+    [JsonProperty("First")]
+    public bool First { get; set; }
+
+    [JsonProperty("Instances")]
+    public List<Plugin> Instances { get; set; }
 }

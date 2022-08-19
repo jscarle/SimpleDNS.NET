@@ -1,9 +1,8 @@
-﻿namespace SimpleDNS.Zones
+﻿namespace SimpleDNS.Zones;
+
+public enum ZskKeyType
 {
-    public enum ZSKKeyType
-    {
-        ZSK,
-        KSK,
-        Simple
-    }
+    Zsk,
+    Ksk,
+    Simple
 }

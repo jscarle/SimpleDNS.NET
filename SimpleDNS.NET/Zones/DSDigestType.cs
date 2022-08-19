@@ -1,9 +1,8 @@
-﻿namespace SimpleDNS.Zones
+﻿namespace SimpleDNS.Zones;
+
+public enum DsDigestType : byte
 {
-    public enum DSDigestType : byte
-    {
-        SHA1 = 1,
-        SHA256 = 2,
-        SHA384 = 4
-    }
+    Sha1 = 1,
+    Sha256 = 2,
+    Sha384 = 4
 }

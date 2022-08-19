@@ -1,30 +1,29 @@
 ﻿using Newtonsoft.Json;
 
-namespace SimpleDNS.Zones
+namespace SimpleDNS.Zones;
+
+public class DnsSecDs
 {
-    public class DNSSecDS
-    {
-        [JsonProperty("KeyTag")]
-        public ushort KeyTag { get; set; }
+    [JsonProperty("KeyTag")]
+    public ushort KeyTag { get; set; }
 
-        //[JsonProperty("Algorithm")]
-        [JsonIgnore]
-        public DSAlgorithm Algorithm { get { return (DSAlgorithm)AlgorithmNumeric; } }
+    //[JsonProperty("Algorithm")]
+    [JsonIgnore]
+    public DsAlgorithm Algorithm => (DsAlgorithm)AlgorithmNumeric;
 
-        [JsonProperty("AlgorithmNumeric")]
-        public byte AlgorithmNumeric { get; set; }
+    [JsonProperty("AlgorithmNumeric")]
+    public byte AlgorithmNumeric { get; set; }
 
-        //[JsonProperty("DigestType")]
-        [JsonIgnore]
-        public DSDigestType DigestType { get { return (DSDigestType)DigestTypeNumeric; } }
+    //[JsonProperty("DigestType")]
+    [JsonIgnore]
+    public DsDigestType DigestType => (DsDigestType)DigestTypeNumeric;
 
-        [JsonProperty("DigestTypeNumeric")]
-        public byte DigestTypeNumeric { get; set; }
+    [JsonProperty("DigestTypeNumeric")]
+    public byte DigestTypeNumeric { get; set; }
 
-        [JsonProperty("Digest")]
-        public string Digest { get; set; }
+    [JsonProperty("Digest")]
+    public string Digest { get; set; }
 
-        [JsonProperty("MasterFileData")]
-        public string MasterFileData { get; set; }
-    }
+    [JsonProperty("MasterFileData")]
+    public string MasterFileData { get; set; }
 }

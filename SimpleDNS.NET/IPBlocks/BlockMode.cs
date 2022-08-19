@@ -1,13 +1,12 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace SimpleDNS.IPBlocks
+namespace SimpleDNS.IPBlocks;
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum BlockMode
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum BlockMode
-    {
-        RateLimit,
-        FixedTime,
-        Forever
-    }
+    RateLimit,
+    FixedTime,
+    Forever
 }

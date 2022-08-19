@@ -1,17 +1,16 @@
 ﻿using Newtonsoft.Json;
 using SimpleDNS.Common;
 
-namespace SimpleDNS.Zones
+namespace SimpleDNS.Zones;
+
+public class ZtKey
 {
-    public class ZTKey
-    {
-        [JsonProperty("Name")]
-        public string Name { get; set; }
+    [JsonProperty("Name")]
+    public string Name { get; set; }
 
-        [JsonProperty("Algorithm")]
-        public TSIGAlgorithm Algorithm { get; set; }
+    [JsonProperty("Algorithm")]
+    public TsigAlgorithm Algorithm { get; set; }
 
-        [JsonProperty("Secret")]
-        public string Secret { get; set; }
-    }
+    [JsonProperty("Secret")]
+    public string Secret { get; set; }
 }

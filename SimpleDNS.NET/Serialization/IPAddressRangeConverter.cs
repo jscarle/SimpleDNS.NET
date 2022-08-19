@@ -2,18 +2,17 @@
 using Newtonsoft.Json;
 using SimpleDNS.Common;
 
-namespace SimpleDNS.Serialization
-{
-    public class IPAddressRangeConverter : JsonConverter<IPAddressRange>
-    {
-        public override void WriteJson(JsonWriter writer, IPAddressRange value, JsonSerializer serializer)
-        {
-            writer.WriteValue(value?.ToString());
-        }
+namespace SimpleDNS.Serialization;
 
-        public override IPAddressRange ReadJson(JsonReader reader, Type objectType, IPAddressRange existingValue, bool hasExistingValue, JsonSerializer serializer)
-        {
-            return reader.Value == null ? null : IPAddressRange.Parse((string)reader.Value);
-        }
+public class IpAddressRangeConverter : JsonConverter<IpAddressRange>
+{
+    public override void WriteJson(JsonWriter writer, IpAddressRange value, JsonSerializer serializer)
+    {
+        writer.WriteValue(value?.ToString());
+    }
+
+    public override IpAddressRange ReadJson(JsonReader reader, Type objectType, IpAddressRange existingValue, bool hasExistingValue, JsonSerializer serializer)
+    {
+        return reader.Value == null ? null : IpAddressRange.Parse((string)reader.Value);
     }
 }

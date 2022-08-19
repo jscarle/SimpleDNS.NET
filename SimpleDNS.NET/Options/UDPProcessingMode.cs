@@ -1,9 +1,8 @@
-﻿namespace SimpleDNS.Options
+﻿namespace SimpleDNS.Options;
+
+public enum UdpProcessingMode : byte
 {
-    public enum UDPProcessingMode : byte
-    {
-        Normal = 0,
-        Ignore = 1,
-        ForceTCP = 2
-    }
+    Normal = 0,
+    Ignore = 1,
+    ForceTcp = 2
 }

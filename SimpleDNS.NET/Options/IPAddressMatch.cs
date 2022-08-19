@@ -1,33 +1,35 @@
 ﻿using Newtonsoft.Json;
 using SimpleDNS.Common;
 
-namespace SimpleDNS.Options
+namespace SimpleDNS.Options;
+
+public class IpAddressMatch : ICommittable
 {
-    public class IPAddressMatch : ICommittable
+    public IpAddressMatch()
     {
-        public IPAddressMatch()
-        {
-            Items_value = new IPAddressRangeList();
-        }
-
-        [JsonIgnore]
-        public bool Changed { get { return (Match_changed | Items_changed | Items_value.Changed); } }
-        public void Commit()
-        {
-            Match_changed = false;
-            Items_changed = false;
-
-            Items_value.Commit();
-        }
-
-        [JsonProperty("Match")]
-        public MatchType Match { get { return Match_value; } set { Match_changed = true; Match_value = value; } }
-        private MatchType Match_value;
-        private bool Match_changed;
-
-        [JsonProperty("Items")]
-        public IPAddressRangeList Items { get { return Items_value; } set { Items_changed = true; Items_value = value; } }
-        private IPAddressRangeList Items_value;
-        private bool Items_changed;
+        _itemsValue = new IpAddressRangeList();
     }
+
+    [JsonIgnore]
+    public bool Changed => _matchChanged | _itemsChanged | _itemsValue.Changed;
+
+    public void Commit()
+    {
+        _matchChanged = false;
+        _itemsChanged = false;
+
+        _itemsValue.Commit();
+    }
+
+    [JsonProperty("Match")]
+    public MatchType Match { get => _matchValue;
+        set { _matchChanged = true; _matchValue = value; } }
+    private MatchType _matchValue;
+    private bool _matchChanged;
+
+    [JsonProperty("Items")]
+    public IpAddressRangeList Items { get => _itemsValue;
+        set { _itemsChanged = true; _itemsValue = value; } }
+    private IpAddressRangeList _itemsValue;
+    private bool _itemsChanged;
 }

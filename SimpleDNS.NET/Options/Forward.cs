@@ -1,50 +1,55 @@
 ﻿using Newtonsoft.Json;
 
-namespace SimpleDNS.Options
+namespace SimpleDNS.Options;
+
+public class Forward : ICommittable
 {
-    public class Forward : ICommittable
+    public Forward()
     {
-        public Forward()
-        {
-            IP_value = new IPAddressList();
-        }
-
-        [JsonIgnore]
-        public bool Changed { get { return (Domain_changed | Extended_changed | Shadow_changed | ShadowAA_changed | IP_changed | IP_value.Changed); } }
-        public void Commit()
-        {
-            Domain_changed = false;
-            Extended_changed = false;
-            Shadow_changed = false;
-            ShadowAA_changed = false;
-            IP_changed = false;
-
-            IP_value.Commit();
-        }
-
-        [JsonProperty("Domain")]
-        public string Domain { get { return Domain_value; } set { Domain_changed = true; Domain_value = value; } }
-        private string Domain_value;
-        private bool Domain_changed;
-
-        [JsonProperty("Extended")]
-        public bool Extended { get { return Extended_value; } set { Extended_changed = true; Extended_value = value; } }
-        private bool Extended_value;
-        private bool Extended_changed;
-
-        [JsonProperty("Shadow")]
-        public bool Shadow { get { return Shadow_value; } set { Shadow_changed = true; Shadow_value = value; } }
-        private bool Shadow_value;
-        private bool Shadow_changed;
-
-        [JsonProperty("ShadowAA")]
-        public bool ShadowAA { get { return ShadowAA_value; } set { ShadowAA_changed = true; ShadowAA_value = value; } }
-        private bool ShadowAA_value;
-        private bool ShadowAA_changed;
-
-        [JsonProperty("IP")]
-        public IPAddressList IP { get { return IP_value; } set { IP_changed = true; IP_value = value; } }
-        private IPAddressList IP_value;
-        private bool IP_changed;
+        _ipValue = new IpAddressList();
     }
+
+    [JsonIgnore]
+    public bool Changed => _domainChanged | _extendedChanged | _shadowChanged | _shadowAaChanged | _ipChanged | _ipValue.Changed;
+
+    public void Commit()
+    {
+        _domainChanged = false;
+        _extendedChanged = false;
+        _shadowChanged = false;
+        _shadowAaChanged = false;
+        _ipChanged = false;
+
+        _ipValue.Commit();
+    }
+
+    [JsonProperty("Domain")]
+    public string Domain { get => _domainValue;
+        set { _domainChanged = true; _domainValue = value; } }
+    private string _domainValue;
+    private bool _domainChanged;
+
+    [JsonProperty("Extended")]
+    public bool Extended { get => _extendedValue;
+        set { _extendedChanged = true; _extendedValue = value; } }
+    private bool _extendedValue;
+    private bool _extendedChanged;
+
+    [JsonProperty("Shadow")]
+    public bool Shadow { get => _shadowValue;
+        set { _shadowChanged = true; _shadowValue = value; } }
+    private bool _shadowValue;
+    private bool _shadowChanged;
+
+    [JsonProperty("ShadowAA")]
+    public bool ShadowAa { get => _shadowAaValue;
+        set { _shadowAaChanged = true; _shadowAaValue = value; } }
+    private bool _shadowAaValue;
+    private bool _shadowAaChanged;
+
+    [JsonProperty("IP")]
+    public IpAddressList Ip { get => _ipValue;
+        set { _ipChanged = true; _ipValue = value; } }
+    private IpAddressList _ipValue;
+    private bool _ipChanged;
 }

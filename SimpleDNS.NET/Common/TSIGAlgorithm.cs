@@ -1,15 +1,14 @@
 ﻿using Newtonsoft.Json;
 using SimpleDNS.Serialization;
 
-namespace SimpleDNS.Common
+namespace SimpleDNS.Common;
+
+[JsonConverter(typeof(TsigAlgorithmConverter))]
+public enum TsigAlgorithm
 {
-    [JsonConverter(typeof(TSIGAlgorithmConverter))]
-    public enum TSIGAlgorithm
-    {
-        HMACMD5,
-        HMACSHA1,
-        HMACSHA256,
-        HMACSHA384,
-        HMACSHA512
-    }
+    Hmacmd5,
+    Hmacsha1,
+    Hmacsha256,
+    Hmacsha384,
+    Hmacsha512
 }

@@ -1,14 +1,13 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace SimpleDNS.Options
+namespace SimpleDNS.Options;
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum DnsLameAction
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum DNSLameAction
-    {
-        Refuse,
-        Stealth,
-        ReferRoot,
-        Synth
-    }
+    Refuse,
+    Stealth,
+    ReferRoot,
+    Synth
 }

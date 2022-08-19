@@ -1,40 +1,39 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace SimpleDNS.Zones
+namespace SimpleDNS.Zones;
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum RecordType
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum RecordType
-    {
-        A,
-        AAAA,
-        AFSDB,
-        ALIAS,
-        ATMA,
-        CAA,
-        CERT,
-        CNAME,
-        DNAME,
-        DS,
-        HINFO,
-        ISDN,
-        LOC,
-        MB,
-        MG,
-        MINFO,
-        MR,
-        MX,
-        NAPTR,
-        NS,
-        NSAP,
-        PTR,
-        RP,
-        RT,
-        SOA,
-        SRV,
-        TLSA,
-        TXT,
-        Unknown,
-        X25
-    }
+    A,
+    Aaaa,
+    Afsdb,
+    Alias,
+    Atma,
+    Caa,
+    Cert,
+    Cname,
+    Dname,
+    Ds,
+    Hinfo,
+    Isdn,
+    Loc,
+    Mb,
+    Mg,
+    Minfo,
+    Mr,
+    Mx,
+    Naptr,
+    Ns,
+    Nsap,
+    Ptr,
+    Rp,
+    Rt,
+    Soa,
+    Srv,
+    Tlsa,
+    Txt,
+    Unknown,
+    X25
 }

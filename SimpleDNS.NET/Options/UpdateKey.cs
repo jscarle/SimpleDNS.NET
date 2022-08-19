@@ -1,51 +1,56 @@
 ﻿using Newtonsoft.Json;
 using SimpleDNS.Common;
 
-namespace SimpleDNS.Options
+namespace SimpleDNS.Options;
+
+public class UpdateKey : ICommittable
 {
-    public class UpdateKey : ICommittable
+    public UpdateKey()
     {
-        public UpdateKey()
-        {
-            Domains_value = new StringList();
-        }
-
-        [JsonIgnore]
-        public bool Changed { get { return (KeyName_changed | Algorithm_changed | Secret_changed | Update_changed | Domains_changed | Domains_value.Changed); } }
-        public void Commit()
-        {
-            KeyName_changed = false;
-            Algorithm_changed = false;
-            Secret_changed = false;
-            Update_changed = false;
-            Domains_changed = false;
-
-            Domains_value.Commit();
-        }
-
-        [JsonProperty("KeyName")]
-        public string KeyName { get { return KeyName_value; } set { KeyName_changed = true; KeyName_value = value; } }
-        private string KeyName_value;
-        private bool KeyName_changed;
-
-        [JsonProperty("Algorithm")]
-        public TSIGAlgorithm Algorithm { get { return Algorithm_value; } set { Algorithm_changed = true; Algorithm_value = value; } }
-        private TSIGAlgorithm Algorithm_value;
-        private bool Algorithm_changed;
-
-        [JsonProperty("Secret")]
-        public string Secret { get { return Secret_value; } set { Secret_changed = true; Secret_value = value; } }
-        private string Secret_value;
-        private bool Secret_changed;
-
-        [JsonProperty("Update")]
-        public string Update { get { return Update_value; } set { Update_changed = true; Update_value = value; } }
-        private string Update_value;
-        private bool Update_changed;
-
-        [JsonProperty("Domains")]
-        public StringList Domains { get { return Domains_value; } set { Domains_changed = true; Domains_value = value; } }
-        private StringList Domains_value;
-        private bool Domains_changed;
+        _domainsValue = new StringList();
     }
+
+    [JsonIgnore]
+    public bool Changed => _keyNameChanged | _algorithmChanged | _secretChanged | _updateChanged | _domainsChanged | _domainsValue.Changed;
+
+    public void Commit()
+    {
+        _keyNameChanged = false;
+        _algorithmChanged = false;
+        _secretChanged = false;
+        _updateChanged = false;
+        _domainsChanged = false;
+
+        _domainsValue.Commit();
+    }
+
+    [JsonProperty("KeyName")]
+    public string KeyName { get => _keyNameValue;
+        set { _keyNameChanged = true; _keyNameValue = value; } }
+    private string _keyNameValue;
+    private bool _keyNameChanged;
+
+    [JsonProperty("Algorithm")]
+    public TsigAlgorithm Algorithm { get => _algorithmValue;
+        set { _algorithmChanged = true; _algorithmValue = value; } }
+    private TsigAlgorithm _algorithmValue;
+    private bool _algorithmChanged;
+
+    [JsonProperty("Secret")]
+    public string Secret { get => _secretValue;
+        set { _secretChanged = true; _secretValue = value; } }
+    private string _secretValue;
+    private bool _secretChanged;
+
+    [JsonProperty("Update")]
+    public string Update { get => _updateValue;
+        set { _updateChanged = true; _updateValue = value; } }
+    private string _updateValue;
+    private bool _updateChanged;
+
+    [JsonProperty("Domains")]
+    public StringList Domains { get => _domainsValue;
+        set { _domainsChanged = true; _domainsValue = value; } }
+    private StringList _domainsValue;
+    private bool _domainsChanged;
 }

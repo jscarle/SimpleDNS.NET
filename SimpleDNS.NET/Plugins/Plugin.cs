@@ -1,34 +1,33 @@
 ﻿using Newtonsoft.Json;
 
-namespace SimpleDNS.Plugins
+namespace SimpleDNS.Plugins;
+
+public class Plugin
 {
-    public class Plugin
-    {
-        [JsonProperty("ID")]
-        public string ID { get; set; }
+    [JsonProperty("ID")]
+    public string Id { get; set; }
 
-        [JsonProperty("DisplayName")]
-        public string DisplayName { get; set; }
+    [JsonProperty("DisplayName")]
+    public string DisplayName { get; set; }
 
-        [JsonProperty("Interface")]
-        public string Interface { get; set; }
+    [JsonProperty("Interface")]
+    public string Interface { get; set; }
 
-        [JsonProperty("DLL")]
-        public string DLL { get; set; }
+    [JsonProperty("DLL")]
+    public string Dll { get; set; }
 
-        [JsonProperty("TypeName")]
-        public string TypeName { get; set; }
+    [JsonProperty("TypeName")]
+    public string TypeName { get; set; }
 
-        [JsonProperty("IPListAllowRecursion")]
-        public bool IPListAllowRecursion { get; set; }
+    [JsonProperty("IPListAllowRecursion")]
+    public bool IpListAllowRecursion { get; set; }
 
-        [JsonProperty("IPListDNSBLWhiteList")]
-        public bool IPListDNSBLWhiteList { get; set; }
+    [JsonProperty("IPListDNSBLWhiteList")]
+    public bool IpListDnsblWhiteList { get; set; }
 
-        [JsonProperty("MaxThreads")]
-        public uint MaxThreads { get; set; }
+    [JsonProperty("MaxThreads")]
+    public uint MaxThreads { get; set; }
 
-        [JsonProperty("MaxQueue")]
-        public uint MaxQueue { get; set; }
-    }
+    [JsonProperty("MaxQueue")]
+    public uint MaxQueue { get; set; }
 }

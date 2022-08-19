@@ -1,12 +1,11 @@
 ﻿//using Newtonsoft.Json;
 //using SimpleDNS.Serialization;
 
-namespace SimpleDNS.Zones
+namespace SimpleDNS.Zones;
+
+//[JsonConverter(typeof(ZSKAlgorithmConverter))]
+public enum ZskAlgorithm
 {
-    //[JsonConverter(typeof(ZSKAlgorithmConverter))]
-    public enum ZSKAlgorithm
-    {
-        RSASHA256,
-        RSASHA512
-    }
+    Rsasha256,
+    Rsasha512
 }

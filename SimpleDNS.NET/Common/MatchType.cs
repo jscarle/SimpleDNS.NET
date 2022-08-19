@@ -1,13 +1,12 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace SimpleDNS.Common
+namespace SimpleDNS.Common;
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum MatchType
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum MatchType
-    {
-        None,
-        Some,
-        Any
-    }
+    None,
+    Some,
+    Any
 }

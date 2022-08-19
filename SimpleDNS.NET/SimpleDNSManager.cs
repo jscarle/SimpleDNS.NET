@@ -12,263 +12,272 @@ using SimpleDNS.Serialization;
 using SimpleDNS.Statistics;
 using SimpleDNS.Zones;
 
-namespace SimpleDNS
+namespace SimpleDNS;
+
+public class SimpleDnsManager
 {
-    public class SimpleDNSManager
+    private readonly RestClient _client;
+    private readonly JsonSerializerSettings _jsonSerializerSettings;
+
+    public SimpleDnsManager(string baseUrl, AuthenticationMode authenticationMode = AuthenticationMode.None, string username = "", string password = "", bool ignoreInvalidCertificate = false)
     {
-        private readonly RestClient client;
-        private readonly JsonSerializerSettings jsonSerializerSettings;
-
-        public SimpleDNSManager(string baseUrl, AuthenticationMode authenticationMode = AuthenticationMode.None, string username = "", string password = "", bool ignoreInvalidCertificate = false)
+        _jsonSerializerSettings = new JsonSerializerSettings()
         {
-            jsonSerializerSettings = new JsonSerializerSettings()
-            {
-                Formatting = Formatting.Indented,
-                NullValueHandling = NullValueHandling.Ignore,
-                Converters = new JsonConverter[] { new IPAddressConverter(), new IPAddressRangeConverter() }
-            };
+            Formatting = Formatting.Indented,
+            NullValueHandling = NullValueHandling.Ignore,
+            Converters = new JsonConverter[] { new IpAddressConverter(), new IpAddressRangeConverter() }
+        };
 
-            client = new RestClient(baseUrl);
-            switch (authenticationMode)
-            {
-                case AuthenticationMode.Basic:
-                    client.Authenticator = new HttpBasicAuthenticator(username, password);
-                    break;
-                case AuthenticationMode.Digest:
-                    client.Authenticator = new HttpDigestAuthenticator(username, password);
-                    break;
-                case AuthenticationMode.Integrated:
-                    client.Authenticator = new NtlmAuthenticator(username, password);
-                    break;
-            }
-            if (ignoreInvalidCertificate)
-                client.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
-        }
-
-        #region /zones
-
-        public List<Zone> GetZones()
+        _client = new RestClient(baseUrl);
+        _client.Authenticator = authenticationMode switch
         {
-            RestRequest request = new RestRequest("/zones", Method.GET, DataFormat.Json);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            List<Zone> result = JsonConvert.DeserializeObject<List<Zone>>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+            AuthenticationMode.Basic => new HttpBasicAuthenticator(username, password),
+            AuthenticationMode.Digest => new HttpDigestAuthenticator(username, password),
+            AuthenticationMode.Integrated => new NtlmAuthenticator(username, password),
+            _ => _client.Authenticator
+        };
+        if (ignoreInvalidCertificate)
+            _client.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+    }
 
-        #endregion
+    #region /zones
 
-        #region /zones/{zonename}
+    public List<Zone> GetZones()
+    {
+        var request = new RestRequest("/zones", Method.GET, DataFormat.Json);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<List<Zone>>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-        public ZoneConfiguration GetZone(string zoneName)
-        {
-            RestRequest request = new RestRequest("/zones/{zonename}", Method.GET, DataFormat.Json);
-            request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            ZoneConfiguration result = JsonConvert.DeserializeObject<ZoneConfiguration>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+    #endregion
 
-        #endregion
+    #region /zones/{zonename}
 
-        #region /zones/{zonename}/records
+    public ZoneConfiguration GetZone(string zoneName)
+    {
+        var request = new RestRequest("/zones/{zonename}", Method.GET, DataFormat.Json);
+        request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<ZoneConfiguration>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-        public List<ZoneRecord> GetZoneRecords(string zoneName)
-        {
-            RestRequest request = new RestRequest("/zones/{zonename}/records", Method.GET, DataFormat.Json);
-            request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            List<ZoneRecord> result = JsonConvert.DeserializeObject<List<ZoneRecord>>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+    #endregion
 
-        public void PatchZoneRecords(string zoneName, List<ZoneRecord> input)
-        {
-            string json = JsonConvert.SerializeObject(input, jsonSerializerSettings);
+    #region /zones/{zonename}/records
 
-            RestRequest request = new RestRequest("/zones/{zonename}/records", Method.PATCH, DataFormat.Json);
-            request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
-            request.AddParameter("application/json; charset=utf-8", json, ParameterType.RequestBody);
-            ValidateResponse(client.Execute(request));
-        }
+    public List<ZoneRecord> GetZoneRecords(string zoneName)
+    {
+        var request = new RestRequest("/zones/{zonename}/records", Method.GET, DataFormat.Json);
+        request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<List<ZoneRecord>>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-        public void PutZoneRecords(string zoneName, List<ZoneRecord> input)
-        {
-            string json = JsonConvert.SerializeObject(input, jsonSerializerSettings);
+    public void PatchZoneRecords(string zoneName, List<ZoneRecord> input)
+    {
+        var json = JsonConvert.SerializeObject(input, _jsonSerializerSettings);
 
-            RestRequest request = new RestRequest("/zones/{zonename}/records", Method.PUT, DataFormat.Json);
-            request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
-            request.AddParameter("application/json; charset=utf-8", json, ParameterType.RequestBody);
-            ValidateResponse(client.Execute(request));
-        }
+        var request = new RestRequest("/zones/{zonename}/records", Method.PATCH, DataFormat.Json);
+        request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
+        request.AddParameter("application/json; charset=utf-8", json, ParameterType.RequestBody);
+        ValidateResponse(_client.Execute(request));
+    }
 
-        #endregion
+    public void PutZoneRecords(string zoneName, List<ZoneRecord> input)
+    {
+        var json = JsonConvert.SerializeObject(input, _jsonSerializerSettings);
 
-        #region /zones/{zonename}/dnsseckeys
+        var request = new RestRequest("/zones/{zonename}/records", Method.PUT, DataFormat.Json);
+        request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
+        request.AddParameter("application/json; charset=utf-8", json, ParameterType.RequestBody);
+        ValidateResponse(_client.Execute(request));
+    }
 
-        public List<DNSSecKey> GetZoneDNSSecKeys(string zoneName)
-        {
-            RestRequest request = new RestRequest("/zones/{zonename}/dnsseckeys", Method.GET, DataFormat.Json);
-            request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            List<DNSSecKey> result = JsonConvert.DeserializeObject<List<DNSSecKey>>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+    #endregion
 
-        #endregion
+    #region /zones/{zonename}/dnsseckeys
 
-        #region /zones/{zonename}/dnsseckeys/{keyid}
+    public List<DnsSecKey> GetZoneDnsSecKeys(string zoneName)
+    {
+        var request = new RestRequest("/zones/{zonename}/dnsseckeys", Method.GET, DataFormat.Json);
+        request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<List<DnsSecKey>>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-        public DNSSecKey GetZoneDNSSecKey(string zoneName, string keyid)
-        {
-            RestRequest request = new RestRequest("/zones/{zonename}/dnsseckeys/{keyid}", Method.GET, DataFormat.Json);
-            request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
-            request.AddParameter("keyid", keyid, ParameterType.UrlSegment);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            DNSSecKey result = JsonConvert.DeserializeObject<DNSSecKey>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+    #endregion
 
-        #endregion
+    #region /zones/{zonename}/dnsseckeys/{keyid}
 
-        #region /zones/{zonename}/dnssecds
+    public DnsSecKey GetZoneDnsSecKey(string zoneName, string keyid)
+    {
+        var request = new RestRequest("/zones/{zonename}/dnsseckeys/{keyid}", Method.GET, DataFormat.Json);
+        request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
+        request.AddParameter("keyid", keyid, ParameterType.UrlSegment);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<DnsSecKey>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-        public List<DNSSecDS> GetZoneDNSSecDS(string zoneName)
-        {
-            RestRequest request = new RestRequest("/zones/{zonename}/dnssecds", Method.GET, DataFormat.Json);
-            request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            List<DNSSecDS> result = JsonConvert.DeserializeObject<List<DNSSecDS>>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+    #endregion
 
-        #endregion
+    #region /zones/{zonename}/dnssecds
 
-        #region /zones/{zonename}/masterfile
+    public List<DnsSecDs> GetZoneDnsSecDs(string zoneName)
+    {
+        var request = new RestRequest("/zones/{zonename}/dnssecds", Method.GET, DataFormat.Json);
+        request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<List<DnsSecDs>>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-        public string GetZoneMasterFile(string zoneName)
-        {
-            RestRequest request = new RestRequest("/zones/{zonename}/masterfile", Method.GET, DataFormat.Json);
-            request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            return response.Content;
-        }
+    #endregion
 
-        #endregion
+    #region /zones/{zonename}/masterfile
 
-        #region /zones/{zonename}/versions
+    public string GetZoneMasterFile(string zoneName)
+    {
+        var request = new RestRequest("/zones/{zonename}/masterfile", Method.GET, DataFormat.Json);
+        request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
+        var response = ValidateResponse(_client.Execute(request));
+        return response.Content;
+    }
 
-        public List<ZoneVersion> GetZoneVersions(string zoneName)
-        {
-            RestRequest request = new RestRequest("/zones/{zonename}/versions", Method.GET, DataFormat.Json);
-            request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            List<ZoneVersion> result = JsonConvert.DeserializeObject<List<ZoneVersion>>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+    #endregion
 
-        #endregion
+    #region /zones/{zonename}/versions
 
-        #region /zones/{zonename}/state
+    public List<ZoneVersion> GetZoneVersions(string zoneName)
+    {
+        var request = new RestRequest("/zones/{zonename}/versions", Method.GET, DataFormat.Json);
+        request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<List<ZoneVersion>>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-        public ZoneState GetZoneState(string zoneName)
-        {
-            RestRequest request = new RestRequest("/zones/{zonename}/state", Method.GET, DataFormat.Json);
-            request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            ZoneState result = JsonConvert.DeserializeObject<ZoneState>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+    #endregion
 
-        #endregion
+    #region /zones/{zonename}/state
 
-        #region /zonesgroups
+    public ZoneState GetZoneState(string zoneName)
+    {
+        var request = new RestRequest("/zones/{zonename}/state", Method.GET, DataFormat.Json);
+        request.AddParameter("zonename", zoneName, ParameterType.UrlSegment);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<ZoneState>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-        public List<ZoneGroup> GetZoneGroups()
-        {
-            RestRequest request = new RestRequest("/zonegroups", Method.GET, DataFormat.Json);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            List<ZoneGroup> result = JsonConvert.DeserializeObject<List<ZoneGroup>>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+    #endregion
 
-        #endregion
+    #region /zonesgroups
 
-        #region /options
+    public List<ZoneGroup> GetZoneGroups()
+    {
+        var request = new RestRequest("/zonegroups", Method.GET, DataFormat.Json);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<List<ZoneGroup>>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-        public OptionsInfo GetOptions()
-        {
-            RestRequest request = new RestRequest("/options", Method.GET, DataFormat.Json);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            OptionsInfo result = JsonConvert.DeserializeObject<OptionsInfo>(response.Content, jsonSerializerSettings);
-            result?.Commit();
-            return result;
-        }
+    #endregion
 
-        public void PatchOptions(OptionsInfo input)
-        {
-            string json = JsonConvert.SerializeObject(input, jsonSerializerSettings);
+    #region /options
 
-            RestRequest request = new RestRequest("/options", Method.PATCH, DataFormat.Json);
-            request.AddParameter("application/json; charset=utf-8", json, ParameterType.RequestBody);
-            ValidateResponse(client.Execute(request));
-        }
+    public OptionsInfo GetOptions()
+    {
+        var request = new RestRequest("/options", Method.GET, DataFormat.Json);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<OptionsInfo>(response.Content, _jsonSerializerSettings);
+        result?.Commit();
+        return result;
+    }
 
-        public void PutOptions(OptionsInfo input)
-        {
-            string json = JsonConvert.SerializeObject(input, jsonSerializerSettings);
+    public void PatchOptions(OptionsInfo input)
+    {
+        var json = JsonConvert.SerializeObject(input, _jsonSerializerSettings);
 
-            RestRequest request = new RestRequest("/options", Method.PUT, DataFormat.Json);
-            request.AddParameter("application/json; charset=utf-8", json, ParameterType.RequestBody);
-            ValidateResponse(client.Execute(request));
-        }
+        var request = new RestRequest("/options", Method.PATCH, DataFormat.Json);
+        request.AddParameter("application/json; charset=utf-8", json, ParameterType.RequestBody);
+        ValidateResponse(_client.Execute(request));
+    }
 
-        #endregion
+    public void PutOptions(OptionsInfo input)
+    {
+        var json = JsonConvert.SerializeObject(input, _jsonSerializerSettings);
 
-        #region /statistics
+        var request = new RestRequest("/options", Method.PUT, DataFormat.Json);
+        request.AddParameter("application/json; charset=utf-8", json, ParameterType.RequestBody);
+        ValidateResponse(_client.Execute(request));
+    }
 
-        public StatisticsInfo GetStatistics()
-        {
-            RestRequest request = new RestRequest("/statistics", Method.GET, DataFormat.Json);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            StatisticsInfo result = JsonConvert.DeserializeObject<StatisticsInfo>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+    #endregion
 
-        #endregion
+    #region /statistics
 
-        #region /ipblock
+    public StatisticsInfo GetStatistics()
+    {
+        var request = new RestRequest("/statistics", Method.GET, DataFormat.Json);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<StatisticsInfo>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-        public IPBlocksInfo GetIPBlocks()
-        {
-            RestRequest request = new RestRequest("/ipblock", Method.GET, DataFormat.Json);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            IPBlocksInfo result = JsonConvert.DeserializeObject<IPBlocksInfo>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+    #endregion
 
-        #endregion
+    #region /ipblock
 
-        #region /plugins
+    public IpBlocksInfo GetIpBlocks()
+    {
+        var request = new RestRequest("/ipblock", Method.GET, DataFormat.Json);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<IpBlocksInfo>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-        public PluginsInfo GetPlugins()
-        {
-            RestRequest request = new RestRequest("/plugins", Method.GET, DataFormat.Json);
-            RestResponse response = ValidateResponse(client.Execute(request));
-            PluginsInfo result = JsonConvert.DeserializeObject<PluginsInfo>(response.Content, jsonSerializerSettings);
-            return result;
-        }
+    #endregion
 
-        #endregion
+    #region /plugins
 
-        private static RestResponse ValidateResponse(IRestResponse response)
-        {
-            if (response.ResponseStatus == ResponseStatus.Error)
-                throw new WebException(response.ErrorMessage, response.ErrorException);
+    public PluginsInfo GetPlugins()
+    {
+        var request = new RestRequest("/plugins", Method.GET, DataFormat.Json);
+        var response = ValidateResponse(_client.Execute(request));
+        var result = JsonConvert.DeserializeObject<PluginsInfo>(response.Content, _jsonSerializerSettings);
+        return result;
+    }
 
-            if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.NoContent)
-                throw new WebException($"{response.StatusCode} {response.StatusDescription}", WebExceptionStatus.ProtocolError);
+    #endregion
 
-            return (RestResponse)response;
-        }
+    private static RestResponse ValidateResponse(IRestResponse response)
+    {
+        if (response.ResponseStatus == ResponseStatus.Error)
+            throw new WebException(response.ErrorMessage, response.ErrorException);
+
+        if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.NoContent)
+            throw new WebException($"{response.StatusCode} {response.StatusDescription}", WebExceptionStatus.ProtocolError);
+
+        return (RestResponse)response;
+    }
+}
+
+public static class Main
+{
+    public static void Entry()
+    {
+string adminUrl = "https://localhost/v2";
+string adminUsername = "admin";
+string adminPassword = "password";
+SimpleDnsManager simpleDns = new SimpleDnsManager(adminUrl, AuthenticationMode.Digest, adminUsername, adminPassword, true);
+
+var options = simpleDns.GetOptions();
+options.DnsCacheReload = false;
+simpleDns.PatchOptions(options);
     }
 }
