@@ -22,7 +22,9 @@ SimpleDnsManager simpleDns = new SimpleDnsManager(adminUrl, AuthenticationMode.D
 string zoneDomain = "domain.text";
 string recordFqdn = "www.domain.text";
 string recordIpAddress = "198.51.100.3";
-simpleDns.PatchZoneRecords(zoneDomain, new List<ZoneRecord> { new ZoneRecord { Name = recordFqdn, Type = RecordType.A, Data = recordIpAddress, Ttl = 14400 } });
+simpleDns.PatchZoneRecords(zoneDomain, new List<ZoneRecord> {
+    new ZoneRecord { Name = recordFqdn, Type = RecordType.A, Data = recordIpAddress, Ttl = 14400 }
+});
 ```
 
 ### Delete an A record if it exists
@@ -32,7 +34,9 @@ string recordFqdn = "www.domain.text";
 List<ZoneRecord> zoneRecords = simpleDns.GetZoneRecords(zoneDomain);
 ZoneRecord zoneRecord = zoneRecords.Find(z => z.Name == recordFqdn);
 if (zoneRecord != null)
-    simpleDns.PatchZoneRecords(zoneDomain, new List<ZoneRecord> { new ZoneRecord { Name = recordFqdn, Remove = true } });
+    simpleDns.PatchZoneRecords(zoneDomain, new List<ZoneRecord> {
+        new ZoneRecord { Name = recordFqdn, Remove = true }
+    });
 ```
 
 ### Change SimpleDNS settings
